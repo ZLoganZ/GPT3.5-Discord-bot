@@ -46,7 +46,7 @@ client.on("messageCreate", async (message) => {
   try {
     await message.channel.sendTyping();
 
-    // Fetch the last 15 messages
+    // Fetch all messages
     let preMessages = await message.channel.messages.fetch();
     preMessages.reverse();
 
@@ -77,9 +77,6 @@ client.on("messageCreate", async (message) => {
     const botMessage = await message.channel.send(
       prompt.data.choices[0].message
     );
-
-    // Send the bot's response to the user
-    message.author.send(prompt.data.choices[0].message);
 
     // Make the bot's message in the channel visible only to the user who initiated the conversation
     const user = message.author;
