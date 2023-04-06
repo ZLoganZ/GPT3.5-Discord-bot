@@ -28,7 +28,9 @@ client.on("messageCreate", async (message) => {
   // Check if the message is from the right channel
   if (message.channel.id !== process.env.CHANNEL_ID) return;
   // Check if the user wants to end the conversation
-  if (message.content.startsWith("!")) return;
+  if (message.content === "!end") {
+    return message.reply("Bye!");
+  }
   // Check if the user wants to delete the conversation
   if (message.content === "!delete") {
     try {
