@@ -28,7 +28,9 @@ client.on("messageCreate", async (message) => {
   // Check if the message is from the right channel
   if (message.channel.id !== process.env.CHANNEL_ID) return;
   // Check if the user wants to end the conversation
-  if (message.content === "!end") {
+  if (message.content.startsWith("!")) return;
+  // Check if the user wants to delete the conversation
+  if (message.content === "!delete") {
     try {
       // Delete all the messages from the user
       let messages = await message.channel.messages.fetch();
