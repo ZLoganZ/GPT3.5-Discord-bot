@@ -29,16 +29,22 @@ client.on("messageCreate", async (message) => {
   if (message.channel.id !== process.env.CHANNEL_ID) return;
   // Check if the user wants to end the conversation
   if (message.content === "!end") {
-    // Delete all the messages from the user
-    const messages = await message.channel.messages.fetch();
-    const userMessages = messages.filter(
-      (msg) => msg.author.id === message.author.id
-    );
-    const botMessages = messages.filter(
-      (msg) => msg.author.id === client.user.id
-    );
-    await message.channel.bulkDelete([...userMessages, ...botMessages]);
-    return;
+    try {
+      // Delete all the messages from the user
+      let messages = await message.channel.messages.fetch();
+      const userMessages = messages.filter(
+        (msg) => msg.author.id === message.author.id
+      );
+      const botMessages = messages.filter(
+        (msg) => msg.author.id === client.user.id
+      );
+      await message.channel.bulkDelete(userMessages);
+      await message.channel.bulkDelete(botMessages);
+      return;
+    } catch (error) {
+      console.error(error.message);
+      return message.reply("Something went wrong!");
+    }
   }
 
   let conversationLog = [{ role: "system", content: "Nice to meet you!" }];
@@ -63,20 +69,13 @@ client.on("messageCreate", async (message) => {
     });
 
     // Create a prompt
-    const prompt = await openai
-      .createChatCompletion({
-        model: "gpt-3.5-turbo",
-        messages: conversationLog,
-      })
-      .catch((error) => {
-        console.error(error);
-        return message.reply("Something went wrong!");
-      });
+    const prompt = await openai.createChatCompletion({
+      model: "gpt-3.5-turbo",
+      messages: conversationLog,
+    });
 
     // Send the bot's response
-    const botMessage = await message.channel.send(
-      prompt.data.choices[0].message
-    );
+    const botMessage = await message.reply(prompt.data.choices[0].message);
 
     // Make the bot's message in the channel visible only to the user who initiated the conversation
     const user = message.author;
@@ -93,7 +92,7 @@ client.on("messageCreate", async (message) => {
     ];
     await botMessage.edit({ permissionOverwrites: permissionsOverwrite });
   } catch (error) {
-    console.error(error);
+    console.error(error.message);
     return message.reply("Something went wrong!");
   }
 });
