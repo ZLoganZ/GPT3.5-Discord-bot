@@ -23,6 +23,7 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 client.on('messageCreate', async (message) => {
+  console.log(message);
   // Check if the message is from a bot
   if (message.author.bot) return;
   // Check if the message is from the right channel
@@ -83,7 +84,8 @@ client.on('messageCreate', async (message) => {
       content: prompt.data.choices[0].text,
       options: {
         reply: { messageReference: message.id },
-        allowedMentions: { repliedUser: true }
+        allowedMentions: { repliedUser: true },
+        ephemeral: true
       }
     });
   } catch (error) {
