@@ -154,7 +154,7 @@ client.on('messageCreate', async (message) => {
       }
     });
   } catch (error) {
-    console.error(error);
+    console.error(error.message);
     return message.reply({
       content: 'Something went wrong!',
       options: {
