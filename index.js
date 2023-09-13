@@ -24,7 +24,12 @@ const openai = new OpenAIApi(configuration);
 
 client.on('messageCreate', async (message) => {
   let conversationLog = [
-    { id: client.user.id, role: 'system', content: 'Nice to meet you!' }
+    {
+      id: client.user.id,
+      role: 'system',
+      content: 'Nice to meet you!',
+      user: message.author.id
+    }
   ];
   // Check if the message is from a bot
   if (message.author.bot) return;
@@ -129,13 +134,17 @@ client.on('messageCreate', async (message) => {
       conversationLog.push({
         id: msg.author.id,
         role: 'user',
-        content: msg.content
+        content: msg.content,
+        user: msg.mentions?.users?.first()?.id
       });
     });
 
     // Get messages of the user by id
     const userMessages = conversationLog.filter(
-      (msg) => msg.id === message.author.id
+      (msg) =>
+        msg.id === message.author.id ||
+        msg.content === 'Nice to meet you!' ||
+        msg.user === message.author.id
     );
 
     // Create a prompt
