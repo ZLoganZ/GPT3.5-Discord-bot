@@ -109,7 +109,7 @@ client.on('messageCreate', async (message) => {
 
 client.login(process.env.TOKEN);
 
-const server = require('http').createServer();
+const server = require('node:http').createServer();
 const port = process.env.PORT || 3000;
 server.listen(port, () => {
   console.log(`Listening on port ${port}`);
