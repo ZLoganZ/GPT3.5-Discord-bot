@@ -79,7 +79,12 @@ client.on('messageCreate', async (message) => {
     });
 
     // Send the bot's response
-    const botMessage = await message.reply(prompt.data.choices[0].message);
+    const botMessage = await message.reply({
+      content: prompt.data.choices[0].text,
+      allowedMentions: { repliedUser: true, users: [message.author.id] },
+      target: message.author,
+      options: { reply: { messageReference: message.id } }
+    });
 
     // Make the bot's message in the channel visible only to the user who sent the message
     await botMessage.channel.permissionOverwrites.edit(message.author, {
