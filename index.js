@@ -28,7 +28,7 @@ client.on('messageCreate', async (message) => {
       id: client.user.id,
       role: 'system',
       content: 'Nice to meet you!',
-      user: message.author.id
+      reply: message.author.id
     }
   ];
   // Check if the message is from a bot
@@ -64,7 +64,7 @@ client.on('messageCreate', async (message) => {
 
         // Delete from the conversation log
         conversationLog = conversationLog.map((msg) => {
-          if (msg.id === message.author.id) {
+          if (msg.id === message.author.id || msg.reply === message.author.id) {
             conversationLog.splice(conversationLog.indexOf(msg), 1);
           }
         });
@@ -100,7 +100,7 @@ client.on('messageCreate', async (message) => {
 
       // Delete from the conversation log
       conversationLog = conversationLog.map((msg) => {
-        if (msg.id === message.author.id) {
+        if (msg.id === message.author.id || msg.reply === message.author.id) {
           conversationLog.splice(conversationLog.indexOf(msg), 1);
         }
       });
@@ -129,13 +129,17 @@ client.on('messageCreate', async (message) => {
     preMessages.forEach((msg) => {
       if (message.content.startsWith('!')) return;
       if (msg.author.id !== client.user.id && message.author.bot) return;
-      if (msg.author.id !== message.author.id) return;
+      if (
+        msg.author.id !== message.author.id &&
+        msg.mentions.users.first()?.id !== message.author.id
+      )
+        return;
 
       conversationLog.push({
         id: msg.author.id,
-        role: 'user',
+        role: msg.author.bot ? 'assistant' : 'user',
         content: msg.content,
-        user: msg.mentions?.users?.first()?.id
+        reply: msg.mentions?.users?.first()?.id || null
       });
     });
 
@@ -144,8 +148,14 @@ client.on('messageCreate', async (message) => {
       (msg) =>
         msg.id === message.author.id ||
         msg.content === 'Nice to meet you!' ||
-        msg.user === message.author.id
+        (msg.reply === message.author.id && msg.id === client.user.id)
     );
+
+    // Delete field id and reply
+    userMessages.forEach((msg) => {
+      delete msg.id;
+      delete msg.reply;
+    });
 
     // Create a prompt
     const prompt = await openai.createChatCompletion({
