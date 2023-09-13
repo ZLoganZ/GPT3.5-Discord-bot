@@ -81,8 +81,6 @@ client.on('messageCreate', async (message) => {
     // Send the bot's response
     const botMessage = await message.reply({
       content: prompt.data.choices[0].text,
-      allowedMentions: { repliedUser: true, users: [message.author.id] },
-      target: message.author,
       options: { reply: { messageReference: message.id } }
     });
 
