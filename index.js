@@ -23,6 +23,9 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 client.on('messageCreate', async (message) => {
+  let conversationLog = [
+    { id: client.user.id, role: 'system', content: 'Nice to meet you!' }
+  ];
   // Check if the message is from a bot
   if (message.author.bot) return;
   // Check if the message is from the right channel
@@ -53,6 +56,13 @@ client.on('messageCreate', async (message) => {
         );
         await message.channel.bulkDelete(userMessages);
         await message.channel.bulkDelete(botMessages);
+
+        // Delete from the conversation log
+        conversationLog = conversationLog.map((msg) => {
+          if (msg.id === message.author.id) {
+            conversationLog.splice(conversationLog.indexOf(msg), 1);
+          }
+        });
       }, 3000);
       return;
     } catch (error) {
@@ -82,6 +92,13 @@ client.on('messageCreate', async (message) => {
       );
       await message.channel.bulkDelete(userMessages);
       await message.channel.bulkDelete(botMessages);
+
+      // Delete from the conversation log
+      conversationLog = conversationLog.map((msg) => {
+        if (msg.id === message.author.id) {
+          conversationLog.splice(conversationLog.indexOf(msg), 1);
+        }
+      });
       return;
     } catch (error) {
       console.error(error.message);
@@ -95,8 +112,6 @@ client.on('messageCreate', async (message) => {
       });
     }
   }
-
-  let conversationLog = [{ role: 'system', content: 'Nice to meet you!' }];
 
   try {
     await message.channel.sendTyping();
@@ -112,15 +127,21 @@ client.on('messageCreate', async (message) => {
       if (msg.author.id !== message.author.id) return;
 
       conversationLog.push({
+        id: msg.author.id,
         role: 'user',
         content: msg.content
       });
     });
 
+    // Get messages of the user by id
+    const userMessages = conversationLog.filter(
+      (msg) => msg.id === message.author.id
+    );
+
     // Create a prompt
     const prompt = await openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
-      messages: conversationLog
+      messages: userMessages
     });
 
     // Send the bot's response
