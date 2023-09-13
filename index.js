@@ -79,30 +79,12 @@ client.on('messageCreate', async (message) => {
     });
 
     // Send the bot's response
-    const botMessage = await message.reply({
+    await message.reply({
       content: prompt.data.choices[0].text,
-      options: { reply: { messageReference: message.id } }
-    });
-
-    // Make the bot's message in the channel visible only to the user who sent the message
-    await botMessage.channel.permissionOverwrites.edit(message.author, {
-      VIEW_CHANNEL: true,
-      SEND_MESSAGES: true,
-      READ_MESSAGE_HISTORY: true
-    });
-
-    // Make the bot's message in the channel visible only to the bot
-    await botMessage.channel.permissionOverwrites.edit(client.user, {
-      VIEW_CHANNEL: true,
-      SEND_MESSAGES: true,
-      READ_MESSAGE_HISTORY: true
-    });
-
-    // Make the bot's message in the channel visible only to the user who sent the message
-    await message.channel.permissionOverwrites.edit(message.author, {
-      VIEW_CHANNEL: true,
-      SEND_MESSAGES: true,
-      READ_MESSAGE_HISTORY: true
+      options: {
+        reply: { messageReference: message.id },
+        allowedMentions: { repliedUser: true }
+      }
     });
   } catch (error) {
     console.error(error.message);
