@@ -23,14 +23,49 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 client.on('messageCreate', async (message) => {
-  console.log(message);
   // Check if the message is from a bot
   if (message.author.bot) return;
   // Check if the message is from the right channel
   if (message.channel.id !== process.env.CHANNEL_ID) return;
   // Check if the user wants to end the conversation
   if (message.content === '!end') {
-    return message.reply('Bye!');
+    try {
+      // Send a message to the user
+      await message.reply({
+        content: 'Goodbye!',
+        options: {
+          reply: { messageReference: message.id },
+          allowedMentions: { repliedUser: true },
+          ephemeral: true
+        }
+      });
+
+      setTimeout(async () => {
+        // Delete all the messages from the user and the bot replied to the user
+        let messages = await message.channel.messages.fetch();
+        const userMessages = messages.filter(
+          (msg) => msg.author.id === message.author.id
+        );
+        const botMessages = messages.filter(
+          (msg) =>
+            msg.mentions.users.has(message.author.id) &&
+            msg.author.id === client.user.id
+        );
+        await message.channel.bulkDelete(userMessages);
+        await message.channel.bulkDelete(botMessages);
+      }, 3000);
+      return;
+    } catch (error) {
+      console.error(error.message);
+      return message.reply({
+        content: 'Something went wrong!',
+        options: {
+          reply: { messageReference: message.id },
+          allowedMentions: { repliedUser: true },
+          ephemeral: true
+        }
+      });
+    }
   }
   // Check if the user wants to delete the conversation
   if (message.content === '!delete') {
@@ -41,14 +76,23 @@ client.on('messageCreate', async (message) => {
         (msg) => msg.author.id === message.author.id
       );
       const botMessages = messages.filter(
-        (msg) => msg.author.id === client.user.id
+        (msg) =>
+          msg.mentions.users.has(message.author.id) &&
+          msg.author.id === client.user.id
       );
       await message.channel.bulkDelete(userMessages);
       await message.channel.bulkDelete(botMessages);
       return;
     } catch (error) {
       console.error(error.message);
-      return message.reply('Something went wrong!');
+      return message.reply({
+        content: 'Something went wrong!',
+        options: {
+          reply: { messageReference: message.id },
+          allowedMentions: { repliedUser: true },
+          ephemeral: true
+        }
+      });
     }
   }
 
@@ -81,7 +125,7 @@ client.on('messageCreate', async (message) => {
 
     // Send the bot's response
     await message.reply({
-      content: prompt.data.choices[0].text,
+      content: prompt.data.choices[0].message.content,
       options: {
         reply: { messageReference: message.id },
         allowedMentions: { repliedUser: true },
@@ -89,8 +133,15 @@ client.on('messageCreate', async (message) => {
       }
     });
   } catch (error) {
-    console.error(error.message);
-    return message.reply('Something went wrong!');
+    console.error(error);
+    return message.reply({
+      content: 'Something went wrong!',
+      options: {
+        reply: { messageReference: message.id },
+        allowedMentions: { repliedUser: true },
+        ephemeral: true
+      }
+    });
   }
 });
 
