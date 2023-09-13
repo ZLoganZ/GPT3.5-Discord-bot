@@ -117,8 +117,10 @@ server.all('/', (req, res) => {
   res.send('Bot is running!');
 });
 
+const PORT = process.env.PORT || 5000;
+
 function keepAlive() {
-  server.listen(3000, () => {
+  server.listen(PORT, () => {
     console.log('Server is ready!');
   });
 }
